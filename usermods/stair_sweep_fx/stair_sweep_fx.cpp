@@ -60,10 +60,10 @@ static void mode_smooth_sweep(void) {
       // Fully filled region
       SEGMENT.setPixelColor(i, color);
     } else {
-      // Gradient zone: fadeAmount = 255 * (gradWidth - distanceFromFront) / gradWidth
-      // distanceFromFront=0 (at front) → fadeAmount≈0 (nearly black)
+      // Gradient zone: fade from black at leading edge to full color deeper in
+      // distanceFromFront=0 (at front) → fadeAmount=0 (black)
       // distanceFromFront=gradWidth-1 (at back) → fadeAmount≈255 (full color)
-      uint8_t fadeAmount = (255 * (gradWidth - distanceFromFront)) / gradWidth;
+      uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
       SEGMENT.setPixelColor(i, color_fade(color, fadeAmount));
     }
   }
@@ -132,7 +132,7 @@ static void mode_smooth_sweep_fill(void) {
       if (distanceFromFront >= gradWidth) {
         SEGMENT.setPixelColor(i, color);
       } else {
-        uint8_t fadeAmount = (255 * (gradWidth - distanceFromFront)) / gradWidth;
+        uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
         SEGMENT.setPixelColor(i, color_fade(color, fadeAmount));
       }
     }
@@ -150,7 +150,7 @@ static void mode_smooth_sweep_fill(void) {
       if (distanceFromFront >= gradWidth) {
         SEGMENT.setPixelColor(i, color);
       } else {
-        uint8_t fadeAmount = (255 * (gradWidth - distanceFromFront)) / gradWidth;
+        uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
         SEGMENT.setPixelColor(i, color_fade(color, fadeAmount));
       }
     }
