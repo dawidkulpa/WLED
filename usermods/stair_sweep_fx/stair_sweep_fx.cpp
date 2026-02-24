@@ -65,6 +65,7 @@ static void mode_smooth_sweep(void) {
       // distanceFromFront=0 (at front) → fadeAmount=0 (color2)
       // distanceFromFront=gradWidth-1 (at back) → fadeAmount≈255 (color)
       uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
+      if (fadeAmount < 20) fadeAmount = 20; // avoid low-PWM color distortion on LEDs
       SEGMENT.setPixelColor(i, color_blend(color2, color, fadeAmount));
     }
   }
@@ -135,6 +136,7 @@ static void mode_smooth_sweep_fill(void) {
         SEGMENT.setPixelColor(i, color);
       } else {
         uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
+        if (fadeAmount < 20) fadeAmount = 20;
         SEGMENT.setPixelColor(i, color_blend(color2, color, fadeAmount));
       }
     }
@@ -153,6 +155,7 @@ static void mode_smooth_sweep_fill(void) {
         SEGMENT.setPixelColor(i, color);
       } else {
         uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
+        if (fadeAmount < 20) fadeAmount = 20;
         SEGMENT.setPixelColor(i, color_blend(color2, color, fadeAmount));
       }
     }
