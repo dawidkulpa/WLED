@@ -24,6 +24,7 @@ static void mode_smooth_sweep(void) {
   if (gradWidth < 1) gradWidth = 1;
   
   uint32_t color = SEGCOLOR(0);
+  uint32_t color2 = SEGCOLOR(1);
   
   // Calculate sweep position (0 to SEGLEN-1)
   unsigned sweepPos;
@@ -41,16 +42,16 @@ static void mode_smooth_sweep(void) {
     int distanceFromFront;
     
     if (!back) {
-      // Forward: behind = full color, ahead = black, gradient in between
+      // Forward: behind = color, ahead = color2, gradient in between
       if (i > sweepPos) {
-        SEGMENT.setPixelColor(i, BLACK);
+        SEGMENT.setPixelColor(i, color2);
         continue;
       }
       distanceFromFront = sweepPos - i;
     } else {
-      // Backward: behind = black, ahead = full color, gradient in between
+      // Backward: behind = color2, ahead = color, gradient in between
       if (i < sweepPos) {
-        SEGMENT.setPixelColor(i, BLACK);
+        SEGMENT.setPixelColor(i, color2);
         continue;
       }
       distanceFromFront = i - sweepPos;
@@ -60,16 +61,16 @@ static void mode_smooth_sweep(void) {
       // Fully filled region
       SEGMENT.setPixelColor(i, color);
     } else {
-      // Gradient zone: fade from black at leading edge to full color deeper in
-      // distanceFromFront=0 (at front) → fadeAmount=0 (black)
-      // distanceFromFront=gradWidth-1 (at back) → fadeAmount≈255 (full color)
+      // Gradient zone: blend from color2 at leading edge to color deeper in
+      // distanceFromFront=0 (at front) → fadeAmount=0 (color2)
+      // distanceFromFront=gradWidth-1 (at back) → fadeAmount≈255 (color)
       uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
-      SEGMENT.setPixelColor(i, color_fade(color, fadeAmount));
+      SEGMENT.setPixelColor(i, color_blend(color2, color, fadeAmount));
     }
   }
 }
 
-static const char _data_FX_SMOOTH_SWEEP[] PROGMEM = "Smooth Sweep@!,Gradient width;!;;";
+static const char _data_FX_SMOOTH_SWEEP[] PROGMEM = "Smooth Sweep@!,Gradient width;!,!;!";
 
 // Effect 2: Smooth Sweep Fill
 static void mode_smooth_sweep_fill(void) {
@@ -86,6 +87,7 @@ static void mode_smooth_sweep_fill(void) {
   if (gradWidth < 1) gradWidth = 1;
   
   uint32_t color = SEGCOLOR(0);
+  uint32_t color2 = SEGCOLOR(1);
   
   // Calculate elapsed time in current phase
   uint32_t elapsed = strip.now - SEGENV.step;
@@ -119,11 +121,11 @@ static void mode_smooth_sweep_fill(void) {
   unsigned sweepPos = (progress * (unsigned long)SEGLEN) / 65536;
   if (sweepPos >= SEGLEN) sweepPos = SEGLEN - 1;
   
-  // Phase 0: Filling (gradient sweeps left to right, behind=full, ahead=black)
+  // Phase 0: Filling (gradient sweeps left to right, behind=color, ahead=color2)
   if (SEGENV.aux0 == 0) {
     for (unsigned i = 0; i < SEGLEN; i++) {
       if (i > sweepPos) {
-        SEGMENT.setPixelColor(i, BLACK);
+        SEGMENT.setPixelColor(i, color2);
         continue;
       }
       
@@ -133,15 +135,15 @@ static void mode_smooth_sweep_fill(void) {
         SEGMENT.setPixelColor(i, color);
       } else {
         uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
-        SEGMENT.setPixelColor(i, color_fade(color, fadeAmount));
+        SEGMENT.setPixelColor(i, color_blend(color2, color, fadeAmount));
       }
     }
   }
-  // Phase 2: Emptying (gradient sweeps left to right, behind=black, ahead=full)
+  // Phase 2: Emptying (gradient sweeps left to right, behind=color2, ahead=color)
   else if (SEGENV.aux0 == 2) {
     for (unsigned i = 0; i < SEGLEN; i++) {
       if (i < sweepPos) {
-        SEGMENT.setPixelColor(i, BLACK);
+        SEGMENT.setPixelColor(i, color2);
         continue;
       }
       
@@ -151,13 +153,13 @@ static void mode_smooth_sweep_fill(void) {
         SEGMENT.setPixelColor(i, color);
       } else {
         uint8_t fadeAmount = (255 * distanceFromFront) / gradWidth;
-        SEGMENT.setPixelColor(i, color_fade(color, fadeAmount));
+        SEGMENT.setPixelColor(i, color_blend(color2, color, fadeAmount));
       }
     }
   }
 }
 
-static const char _data_FX_SMOOTH_SWEEP_FILL[] PROGMEM = "Smooth Sweep Fill@!,Gradient width;!;;";
+static const char _data_FX_SMOOTH_SWEEP_FILL[] PROGMEM = "Smooth Sweep Fill@!,Gradient width;!,!;!";
 
 // Usermod class
 class StairSweepFx : public Usermod {
